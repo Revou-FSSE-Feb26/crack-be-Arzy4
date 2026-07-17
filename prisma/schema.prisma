@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum StationStatus {
+  AVAILABLE
+  BUSY
+  MAINTENANCE
+  INACTIVE
+}
+
+enum ChargerType {
+  NORMAL
+  FAST
+  ULTRA
+}
+
+enum SlotStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  fullName     String   @map("full_name")
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  phoneNumber  String?  @map("phone_number")
+  role         UserRole @default(USER)
+
+  bookings Booking[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model ChargingStation {
+  id          Int           @id @default(autoincrement())
+  name        String
+  location    String
+  area        String
+  address     String
+  latitude    Decimal       @db.Decimal(10, 7)
+  longitude   Decimal       @db.Decimal(10, 7)
+  description String?
+  status      StationStatus @default(AVAILABLE)
+  imageUrl    String?       @map("image_url")
+
+  slots ChargingSlot[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("charging_stations")
+}
+
+model ChargingSlot {
+  id          Int         @id @default(autoincrement())
+  stationId   Int         @map("station_id")
+  slotCode    String      @map("slot_code")
+  chargerType ChargerType @map("charger_type")
+  powerKw     Int         @map("power_kw")
+  pricePerKwh Decimal     @map("price_per_kwh") @db.Decimal(10, 2)
+  status      SlotStatus  @default(AVAILABLE)
+
+  station  ChargingStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([stationId, slotCode])
+  @@map("charging_slots")
+}
+
+model Booking {
+  id            Int           @id @default(autoincrement())
+  userId        Int           @map("user_id")
+  slotId        Int           @map("slot_id")
+  bookingCode   String        @unique @map("booking_code")
+  startTime     DateTime      @map("start_time")
+  endTime       DateTime      @map("end_time")
+  estimatedKwh  Decimal?      @map("estimated_kwh") @db.Decimal(10, 2)
+  estimatedCost Decimal?      @map("estimated_cost") @db.Decimal(12, 2)
+  status        BookingStatus @default(PENDING)
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slot ChargingSlot @relation(fields: [slotId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("bookings")
+}
