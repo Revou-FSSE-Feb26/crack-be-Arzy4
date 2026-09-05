@@ -1,10 +1,11 @@
 import {
-  Injectable,
-  NotFoundException,
+    Injectable,
+    NotFoundException
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateStationDto } from "./dto/create-station.dto";
 import { UpdateStationDto } from "./dto/update-station.dto";
+import { StationResponse, StationsResponse } from "./interfaces/stations-response.interface";
 
 @Injectable()
 export class StationsService {
@@ -12,14 +13,8 @@ export class StationsService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async create(createStationDto: CreateStationDto) {
-    return this.prisma.chargingStation.create({
-      data: createStationDto,
-    });
-  }
-
-  async findAll() {
-    return this.prisma.chargingStation.findMany({
+  async findAll(): Promise<StationsResponse> {
+    const stations = await this.prisma.chargingStation.findMany({
       include: {
         slots: true,
       },
@@ -27,11 +22,21 @@ export class StationsService {
         createdAt: "desc",
       },
     });
+
+    return {
+      message: 'All charging stations retrieved successfully',
+      data: stations.map((station) => ({
+        ...station,
+        latitude: Number(station.latitude),
+        longitude: Number(station.longitude),
+      })),
+    };
   }
 
-  async findOne(id: number) {
-    const station =
-      await this.prisma.chargingStation.findUnique({
+  async findOne(
+    id: number
+  ): Promise<StationResponse> {
+    const station = await this.prisma.chargingStation.findUnique({
         where: {
           id,
         },
@@ -42,28 +47,63 @@ export class StationsService {
 
     if (!station) {
       throw new NotFoundException(
-        `Charging station with ID ${id} was not found`,
+        `Charging station ID ${id} was not found`,
       );
     }
 
-    return station;
+    return {
+      message: `Charging station ID ${id} retrieved successfully`,
+      data: {
+        ...station,
+        latitude: Number(station.latitude),
+        longitude: Number(station.longitude),
+      },
+    };
+  }
+
+  async create(
+    createStationDto: CreateStationDto
+  ): Promise<StationResponse> {
+    const station = await this.prisma.chargingStation.create({
+      data: createStationDto,
+    });
+
+    return {
+      message: 'New charging station created successfully',
+      data: {
+        ...station,
+        latitude: Number(station.latitude),
+        longitude: Number(station.longitude),
+      },
+    };
   }
 
   async update(
     id: number,
     updateStationDto: UpdateStationDto,
-  ) {
+  ): Promise<StationResponse> {
     await this.findOne(id);
 
-    return this.prisma.chargingStation.update({
+    const updatedStation = await this.prisma.chargingStation.update({
       where: {
         id,
       },
       data: updateStationDto,
     });
+
+    return {
+      message: `Charging station ID ${id} was updated successfully`,
+      data: {
+        ...updatedStation,
+        latitude: Number(updatedStation.latitude),
+        longitude: Number(updatedStation.longitude),
+      },
+    };
   }
 
-  async remove(id: number) {
+  async remove(
+    id: number
+  ): Promise<StationResponse> {
     await this.findOne(id);
 
     const deletedStation =
@@ -74,8 +114,12 @@ export class StationsService {
       });
 
     return {
-      message: `Charging station with ID ${id} was deleted successfully`,
-      data: deletedStation,
+      message: `Charging station ID ${id} was deleted successfully`,
+      data: {
+        ...deletedStation,
+        latitude: Number(deletedStation.latitude),
+        longitude: Number(deletedStation.longitude),
+      },
     };
   }
 }

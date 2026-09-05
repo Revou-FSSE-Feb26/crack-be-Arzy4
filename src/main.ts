@@ -24,9 +24,9 @@ async function bootstrap(): Promise<void> {
   // NestJS automatically validates incoming requests
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Only properties inside the DTO are allowed.
+      whitelist: true,
       forbidNonWhitelisted: true,
-      transform: true, // For converting values in routes
+      transform: true,
     }),
   );
 
