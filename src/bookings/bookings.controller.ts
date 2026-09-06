@@ -14,11 +14,14 @@ import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 
 @Controller('bookings')
+@ApiBearerAuth('access-token')
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
+  @ApiResponse({ status: 200, description: 'Retrieve all bookings belonging to the authenticated user' })
   @UseGuards(JwtAuthGuard)
   @Get()
   findAll(
@@ -29,6 +32,7 @@ export class BookingsController {
     );
   }
 
+  @ApiResponse({ status: 200, description: 'Retrieve a booking by ID belonging to the authenticated user' })
   @UseGuards(JwtAuthGuard)
   @Get(":id")
   findOne(
@@ -38,6 +42,7 @@ export class BookingsController {
     return this.bookingsService.findOne(id, req.user.id, req.user.role);
   }
 
+  @ApiResponse({ status: 201, description: 'Create a booking for the authenticated user' })
   @UseGuards(JwtAuthGuard)
   @Post()
   create(
@@ -50,6 +55,7 @@ export class BookingsController {
     );
   }
 
+  @ApiResponse({ status: 200, description: 'Update a booking belonging to the authenticated user' })
   @UseGuards(JwtAuthGuard)
   @Patch(":id")
   update(
@@ -65,6 +71,7 @@ export class BookingsController {
     );
   }
 
+  @ApiResponse({ status: 200, description: 'Delete a booking belonging to the authenticated user' })
   @UseGuards(JwtAuthGuard)
   @Delete(":id")
   remove(

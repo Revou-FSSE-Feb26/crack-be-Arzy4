@@ -1,7 +1,89 @@
-import { Controller } from '@nestjs/common';
+import { 
+  Controller, 
+  Body,
+  Get, 
+  UseGuards, 
+  Request, 
+  Param,
+  ParseIntPipe,
+  Post,
+  Patch,
+  Delete
+} from '@nestjs/common';
 import { PaymentsService } from './payments.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CreatePaymentDto } from './dto/create-payments.dto';
+import { UpdatePaymentDto } from './dto/update-payments.dto';
+import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 
 @Controller('payments')
+@ApiBearerAuth('access-token')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
+  
+  @ApiResponse({ status: 200, description: 'Retrieve all payments belonging to the authenticated user' })
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  findAll(
+    @Request() req) {
+    return this.paymentsService.findAll(
+      req.user.id,
+      req.user.role,
+    );
+  }
+
+  @ApiResponse({ status: 200, description: 'Retrieve a payment by ID belonging to the authenticated user' })
+  @UseGuards(JwtAuthGuard)
+  @Get(":id")
+  findOne(
+    @Param("id", ParseIntPipe) id: number,
+    @Request() req,
+  ) {
+    return this.paymentsService.findOne(id, req.user.id, req.user.role);
+  }
+
+  @ApiResponse({ status: 201, description: 'Create a payment for the authenticated user' })
+  @UseGuards(JwtAuthGuard)
+  @Post()
+  create(
+    @Body() createPaymentDto: CreatePaymentDto,
+    @Request() req,
+  ) {
+    return this.paymentsService.create(
+      createPaymentDto,
+      req.user.id,
+      req.user.role
+    );
+  }
+
+  @ApiResponse({ status: 200, description: 'Update a payment belonging to the authenticated user' })
+  @UseGuards(JwtAuthGuard)
+  @Patch(":id")
+  update(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() updatePaymentDto: UpdatePaymentDto,
+    @Request() req,
+  ) {
+    return this.paymentsService.update(
+      id,
+      updatePaymentDto,
+      req.user.id,
+      req.user.role
+    );
+  }
+
+  @ApiResponse({ status: 200, description: 'Delete a payment belonging to the authenticated user' })
+  @UseGuards(JwtAuthGuard)
+  @Delete(":id")
+  remove(
+    @Param("id", ParseIntPipe) id: number,
+    @Request() req,
+  ) {
+    return this.paymentsService.remove(
+      id,
+      req.user.id,
+      req.user.role
+    );
+  }
+  
 }

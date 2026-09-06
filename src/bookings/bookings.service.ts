@@ -8,11 +8,13 @@ import { CreateBookingDto } from "./dto/create-booking.dto";
 import { UpdateBookingDto } from "./dto/update-booking.dto";
 import { BookingResponse } from './interfaces/bookings-response.interface';
 import { BookingsResponse } from './interfaces/bookings-response.interface';
+import { PaymentCalculatorService } from '../payments/payment-calculator.service';
 
 @Injectable()
 export class BookingsService {
     constructor(
         private prisma: PrismaService,
+        private paymentCalculator: PaymentCalculatorService,
     ) {}
 
     async findAll(
@@ -73,6 +75,26 @@ export class BookingsService {
             createBookingDto.durationMinutes * 60 * 1000,
         );
 
+        // Get the selected charging slot
+        const slot = await this.prisma.chargingSlot.findUnique({
+            where: {
+                id: createBookingDto.slotId,
+            },
+        });
+
+        if (!slot) {
+            throw new NotFoundException(
+                `Charging slot with ID ${createBookingDto.slotId} was not found`,
+            );
+        }
+
+        // Calculate estimated energy and cost
+        const calculation = this.paymentCalculator.calculate(
+            Number(slot.powerKw),
+            createBookingDto.durationMinutes,
+            Number(slot.pricePerKwh),
+        );
+
         const booking = await this.prisma.booking.create({
             data: {
                 userId: userId,
@@ -80,6 +102,8 @@ export class BookingsService {
                 bookingCode: `BOOK-${Date.now()}`,
                 startTime: startTime,
                 endTime: endTime,
+                estimatedKwh: calculation.estimatedKwh,
+                estimatedCost: calculation.estimatedCost,
             },
         });
 

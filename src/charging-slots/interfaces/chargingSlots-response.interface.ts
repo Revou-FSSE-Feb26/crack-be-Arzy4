@@ -1,4 +1,4 @@
-import { ChargingSlot } from './chargingSlots.interfaces';
+import { ChargingSlot } from './chargingSlots.interface';
 
 export interface ChargingSlotResponse {
     message: string;

@@ -4,6 +4,7 @@ import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 
 @Injectable()
@@ -11,6 +12,7 @@ export class AuthService {
     constructor(
         private readonly usersService: UsersService,
         private readonly jwtService: JwtService,
+        private readonly configService: ConfigService,
     ) {}
 
     async register(registerDto: RegisterDto) {
@@ -49,8 +51,15 @@ export class AuthService {
             role: user.role,
         };
 
-        const token = this.jwtService.sign(payload);
+        // Access token
+        const accessToken = this.jwtService.sign(payload);
 
-        return { token };
+        // Refresh token
+        const refreshToken = this.jwtService.sign(payload, {
+            secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+            expiresIn: '7d',
+        });
+
+        return { accessToken, refreshToken };
     }
 }

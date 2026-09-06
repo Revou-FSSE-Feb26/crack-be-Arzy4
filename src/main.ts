@@ -2,6 +2,7 @@ import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
@@ -29,6 +30,24 @@ async function bootstrap(): Promise<void> {
       transform: true,
     }),
   );
+
+  // For Swagger API Documentation
+  const config = new DocumentBuilder()
+    .setTitle('CRACK EV Charging API')
+    .setDescription('API documentation for the CRACK EV Charging System')
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      'access-token', // This name will be used in the Swagger UI
+    )
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
 
   // Nest read/check PORT inside .env
   const port = configService.get<number>("PORT", 3001);

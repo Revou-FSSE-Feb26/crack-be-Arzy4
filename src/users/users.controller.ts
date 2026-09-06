@@ -15,11 +15,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 
 @Controller('users')
+@ApiBearerAuth('access-token')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @ApiResponse({ status: 200, description: 'Retrieve all users (Admin Only)' })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Get()
@@ -27,6 +30,7 @@ export class UsersController {
       return this.usersService.findAll();
     }
   
+  @ApiResponse({ status: 200, description: 'Retrieve user by ID' })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get(":id")
   findOne(
@@ -40,6 +44,7 @@ export class UsersController {
     );
   }
 
+  @ApiResponse({ status: 201, description: 'Create a new user account (Register)' })
   @UseGuards(JwtAuthGuard)
   @Post()
   create(
@@ -48,6 +53,7 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @ApiResponse({ status: 200, description: 'Update the user account' })
   @UseGuards(JwtAuthGuard)
   @Patch(":id")
   update(
@@ -63,6 +69,7 @@ export class UsersController {
     );
   }
 
+  @ApiResponse({ status: 200, description: 'Delete the user account' })
   @UseGuards(JwtAuthGuard)
   @Delete(":id")
   remove(
