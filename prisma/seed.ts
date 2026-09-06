@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs";
 import {
   BookingStatus,
   ChargerType,
+  PaymentMethod,
+  PaymentStatus,
   Prisma,
   PrismaClient,
   SlotStatus,
@@ -383,6 +385,59 @@ async function main(): Promise<void> {
     ],
   });
 
+  // ---------------------------------------
+  // Payments
+  // ---------------------------------------
+  const robbyBooking1 = await prisma.booking.findUnique({
+    where: {
+      bookingCode: "VOL-202607-001",
+    },
+  });
+
+  const mayaBooking = await prisma.booking.findUnique({
+    where: {
+      bookingCode: "VOL-202607-002",
+    },
+  });
+
+  const robbyBooking2 = await prisma.booking.findUnique({
+    where: {
+      bookingCode: "VOL-202607-003",
+    },
+  });
+
+  if (!robbyBooking1 || !mayaBooking || !robbyBooking2) {
+    throw new Error(
+      "One or more bookings required for payments were not found.",
+    );
+  }
+
+   await prisma.payment.createMany({
+    data: [
+      {
+        bookingId: robbyBooking1.id,
+        amount: "112500.00",
+        paymentMethod: PaymentMethod.E_WALLET,
+        status: PaymentStatus.PAID,
+        transactionId: "VOL-PAY-001",
+      },
+      {
+        bookingId: mayaBooking.id,
+        amount: "220000.00",
+        paymentMethod: PaymentMethod.CARD,
+        status: PaymentStatus.PENDING,
+        transactionId: "VOL-PAY-002",
+      },
+      {
+        bookingId: robbyBooking2.id,
+        amount: "93750.00",
+        paymentMethod: PaymentMethod.E_WALLET,
+        status: PaymentStatus.PAID,
+        transactionId: "VOL-PAY-003",
+      },
+    ],
+  });
+
   const totalSlots = createdStations.reduce(
     (total, station) =>
       total + station.slots.length,
@@ -400,7 +455,9 @@ async function main(): Promise<void> {
   );
   console.log(`- ${totalSlots} charging slots`);
   console.log("- 3 bookings");
+  console.log("- 3 payments");
 }
+
 
 main()
   .catch((error: unknown) => {
