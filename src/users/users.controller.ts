@@ -29,6 +29,16 @@ export class UsersController {
     findAll() {
       return this.usersService.findAll();
     }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  getProfile(@Request() req: any) {
+    return this.usersService.findOne(
+      req.user.id,
+      req.user.id,
+      req.user.role,
+    );
+  }
   
   @ApiResponse({ status: 200, description: 'Retrieve user by ID' })
   @UseGuards(JwtAuthGuard, RolesGuard)
