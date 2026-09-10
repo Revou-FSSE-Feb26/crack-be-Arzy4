@@ -15,10 +15,11 @@ async function bootstrap(): Promise<void> {
 
   // Enabling CORS to allow request coming from frontend
   app.enableCors({
-    origin: configService.get<string>(
-      "FRONTEND_URL"
-    ),
-    credentials: true, // Allow the browsers to send cookies, JWT cookies, session cookies
+    origin: [
+      "http://localhost:3000",
+      configService.get<string>("FRONTEND_URL"),
+    ].filter(Boolean) as string[],
+    credentials: true,
   });
 
   // NestJS automatically validates incoming requests
