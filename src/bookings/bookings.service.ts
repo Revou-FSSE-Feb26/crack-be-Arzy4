@@ -46,6 +46,14 @@ export class BookingsService {
             where: {
                 id,
             },
+            include: {
+                slot: {
+                    include: {
+                        station: true,
+                    },
+                },
+                payment: true,
+            },
         });
 
         if (!booking) {
