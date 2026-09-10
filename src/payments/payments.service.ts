@@ -128,10 +128,10 @@ export class PaymentsService {
     ): Promise<PaymentResponse> {
         const payment = await this.prisma.payment.findUnique({
             where: {
-                id,
+            id,
             },
             include: {
-                booking: true,
+            booking: true,
             },
         });
 
@@ -141,21 +141,74 @@ export class PaymentsService {
 
         if (role !== 'ADMIN' && payment.booking.userId !== userId) {
             throw new ForbiddenException(
-                'You are not allowed to update this payment',
+            'You are not allowed to update this payment',
             );
         }
 
         const updatedPayment = await this.prisma.payment.update({
             where: {
-                id,
+            id,
             },
             data: {
-                paymentMethod: updatePaymentDto.paymentMethod,
+            paymentMethod: updatePaymentDto.paymentMethod,
             },
         });
 
         return {
             message: 'Payment updated successfully',
+            data: {
+            ...updatedPayment,
+            amount: Number(updatedPayment.amount),
+            },
+        };
+    }
+
+    async completePayment(
+        id: number,
+        userId: number,
+        role: string,
+    ): Promise<PaymentResponse> {
+        const payment = await this.prisma.payment.findUnique({
+            where: {
+            id,
+            },
+            include: {
+            booking: true,
+            },
+        });
+
+        if (!payment) {
+            throw new NotFoundException('Payment not found');
+        }
+
+        if (role !== 'ADMIN' && payment.booking.userId !== userId) {
+            throw new ForbiddenException(
+            'You are not allowed to complete this payment',
+            );
+        }
+
+        const [updatedPayment] = await this.prisma.$transaction([
+            this.prisma.payment.update({
+            where: {
+                id,
+            },
+            data: {
+                status: 'PAID',
+            },
+            }),
+
+            this.prisma.booking.update({
+            where: {
+                id: payment.bookingId,
+            },
+            data: {
+                status: 'CONFIRMED',
+            },
+            }),
+        ]);
+
+        return {
+            message: 'Payment completed successfully',
             data: {
             ...updatedPayment,
             amount: Number(updatedPayment.amount),

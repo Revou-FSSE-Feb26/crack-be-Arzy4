@@ -72,6 +72,24 @@ export class PaymentsController {
     );
   }
 
+  @ApiResponse({
+    status: 200,
+    description:
+      'Complete a payment and confirm the related booking',
+  })
+  @UseGuards(JwtAuthGuard)
+  @Patch(":id/complete")
+  completePayment(
+    @Param("id", ParseIntPipe) id: number,
+    @Request() req,
+  ) {
+    return this.paymentsService.completePayment(
+      id,
+      req.user.id,
+      req.user.role,
+    );
+  }
+
   @ApiResponse({ status: 200, description: 'Delete a payment belonging to the authenticated user' })
   @UseGuards(JwtAuthGuard)
   @Delete(":id")

@@ -112,6 +112,7 @@ export class BookingsService {
                 endTime: endTime,
                 estimatedKwh: calculation.estimatedKwh,
                 estimatedCost: calculation.estimatedCost,
+                status: "PENDING",
             },
         });
 
