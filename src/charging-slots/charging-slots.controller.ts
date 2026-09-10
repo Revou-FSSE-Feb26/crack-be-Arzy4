@@ -13,14 +13,12 @@ export class ChargingSlotsController {
   constructor(private readonly chargingSlotsService: ChargingSlotsService) {}
 
   @ApiResponse({ status: 200, description: 'Retrieve all charging slots' })
-  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.chargingSlotsService.findAll();
   }
 
   @ApiResponse({ status: 200, description: 'Retrieve a charging slot by ID' })
-  @UseGuards(JwtAuthGuard)
   @Get(":id")
   findOne(
     @Param("id", ParseIntPipe) id: number,

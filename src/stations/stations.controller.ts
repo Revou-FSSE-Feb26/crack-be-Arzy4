@@ -25,14 +25,12 @@ export class StationsController {
   ) {}
 
   @ApiResponse({ status: 200, description: 'Retrieve all stations' })
-  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.stationsService.findAll();
   }
   
   @ApiResponse({ status: 200, description: 'Retrieve a station by ID' })
-  @UseGuards(JwtAuthGuard)
   @Get(":id")
   findOne(
     @Param("id", ParseIntPipe) id: number,
