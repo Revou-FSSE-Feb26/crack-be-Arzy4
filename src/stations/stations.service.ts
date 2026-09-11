@@ -19,7 +19,7 @@ export class StationsService {
         slots: true,
       },
       orderBy: {
-        createdAt: "desc",
+        id: "asc",
       },
     });
 
