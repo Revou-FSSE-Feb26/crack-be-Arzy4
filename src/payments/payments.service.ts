@@ -79,6 +79,8 @@ export class PaymentsService {
         userId: number,
         role: string,
     ): Promise<PaymentResponse> {
+        const transactionId = `VOLTRA-TXN-${Date.now()}-${Math.floor(1000 + Math.random() * 9000,)}`;
+
         const booking = await this.prisma.booking.findUnique({
             where: {
                 id: createPaymentDto.bookingId,
@@ -108,6 +110,7 @@ export class PaymentsService {
                 bookingId: createPaymentDto.bookingId,
                 amount: booking.estimatedCost,
                 paymentMethod: createPaymentDto.paymentMethod,
+                transactionId,
             },
         });
 
