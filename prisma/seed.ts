@@ -41,13 +41,14 @@ function mapStationStatus(status: string): StationStatus {
     case "Available":
       return StationStatus.AVAILABLE;
 
-    case "Limited":
-    case "Almost Full":
-    case "Full":
-      return StationStatus.BUSY;
+    case "Maintenance":
+      return StationStatus.MAINTENANCE;
+
+    case "Inactive":
+      return StationStatus.INACTIVE;
 
     default:
-      return StationStatus.INACTIVE;
+      return StationStatus.AVAILABLE;
   }
 }
 
@@ -175,23 +176,6 @@ type CreatedStationWithSlots =
 async function main(): Promise<void> {
   console.log("Starting Voltra database seed...");
 
-  /*
-   * Delete old data in dependency order.
-   *
-   * Booking depends on User and ChargingSlot.
-   * ChargingSlot depends on ChargingStation.
-   */
-  await prisma.$executeRawUnsafe(`
-  TRUNCATE TABLE
-    "bookings",
-    "charging_slots",
-    "charging_stations",
-    "users"
-  RESTART IDENTITY CASCADE;
-`);
-
-  console.log("Existing mock data removed.");
-
   const adminPasswordHash = await bcrypt.hash(
     "Admin123!",
     10,
@@ -206,8 +190,16 @@ async function main(): Promise<void> {
   // Users
   // ---------------------------------------
 
-  const admin = await prisma.user.create({
-    data: {
+  const admin = await prisma.user.upsert({
+    where: {
+      email: "admin@voltra.com",
+    },
+    update: {
+      fullName: "Voltra Administrator",
+      phoneNumber: "081234567890",
+      role: UserRole.ADMIN,
+    },
+    create: {
       fullName: "Voltra Administrator",
       email: "admin@voltra.com",
       passwordHash: adminPasswordHash,
@@ -216,8 +208,16 @@ async function main(): Promise<void> {
     },
   });
 
-  const robby = await prisma.user.create({
-    data: {
+  const robby = await prisma.user.upsert({
+    where: {
+      email: "robby@example.com",
+    },
+    update: {
+      fullName: "Robby Arzy",
+      phoneNumber: "081234567891",
+      role: UserRole.USER,
+    },
+    create: {
       fullName: "Robby Arzy",
       email: "robby@example.com",
       passwordHash: userPasswordHash,
@@ -226,8 +226,16 @@ async function main(): Promise<void> {
     },
   });
 
-  const maya = await prisma.user.create({
-    data: {
+  const maya = await prisma.user.upsert({
+    where: {
+      email: "maya@example.com",
+    },
+    update: {
+      fullName: "Maya Pratama",
+      phoneNumber: "081234567892",
+      role: UserRole.USER,
+    },
+    create: {
       fullName: "Maya Pratama",
       email: "maya@example.com",
       passwordHash: userPasswordHash,
@@ -246,58 +254,98 @@ async function main(): Promise<void> {
 
   for (const mockStation of ChargingStationsData) {
     const createdStation =
-      await prisma.chargingStation.create({
-        data: {
-          name: mockStation.name,
-          location: mockStation.location,
-          area: mockStation.area,
-          address: mockStation.address,
+  await prisma.chargingStation.upsert({
+    where: {
+      id: mockStation.id,
+    },
 
-          /*
-           * Your frontend data currently has the coordinate
-           * property names reversed:
-           *
-           * longitude contains -7.x
-           * latitude contains 112.x
-           *
-           * Surabaya should use:
-           * latitude  = -7.x
-           * longitude = 112.x
-           */
-          latitude:
-            mockStation.longitude.toString(),
+    update: {
+      name: mockStation.name,
+      location: mockStation.location,
+      area: mockStation.area,
+      address: mockStation.address,
 
-          longitude:
-            mockStation.latitude.toString(),
+      latitude:
+        mockStation.longitude.toString(),
 
-          description:
-            `${mockStation.name} provides Normal, Fast, and Ultra EV charging services.`,
+      longitude:
+        mockStation.latitude.toString(),
 
-          status: mapStationStatus(
-            mockStation.status,
-          ),
+      description:
+        `${mockStation.name} provides Normal, Fast, and Ultra EV charging services.`,
 
-          imageUrl: null,
+      status: mapStationStatus(
+        mockStation.status,
+      ),
 
-          slots: {
-            create: createSlotsForStation(
-              mockStation.id,
-              mockStation.chargingTypes,
-            ),
-          },
+      imageUrl: null,
+    },
+
+    create: {
+      id: mockStation.id,
+      name: mockStation.name,
+      location: mockStation.location,
+      area: mockStation.area,
+      address: mockStation.address,
+
+      latitude:
+        mockStation.longitude.toString(),
+
+      longitude:
+        mockStation.latitude.toString(),
+
+      description:
+        `${mockStation.name} provides Normal, Fast, and Ultra EV charging services.`,
+
+      status: mapStationStatus(
+        mockStation.status,
+      ),
+
+      imageUrl: null,
+    },
+
+    include: {
+      slots: true,
+    },
+  });
+  createdStations.push(createdStation);
+
+  const slots = createSlotsForStation(
+    mockStation.id,
+    mockStation.chargingTypes,
+  );
+
+  for (const slot of slots) {
+    await prisma.chargingSlot.upsert({
+      where: {
+        stationId_slotCode: {
+          stationId: createdStation.id,
+          slotCode: slot.slotCode,
         },
+      },
 
-        include: {
-          slots: true,
-        },
-      });
+      update: {
+        stationId: createdStation.id,
+        chargerType: slot.chargerType,
+        powerKw: slot.powerKw,
+        pricePerKwh: slot.pricePerKwh,
+      },
 
-    createdStations.push(createdStation);
-
-    console.log(
-      `Created ${createdStation.name} with ${createdStation.slots.length} slots.`,
-    );
+      create: {
+        stationId: createdStation.id,
+        slotCode: slot.slotCode,
+        chargerType: slot.chargerType,
+        powerKw: slot.powerKw,
+        pricePerKwh: slot.pricePerKwh,
+        status: slot.status,
+      },
+    });
   }
+
+  console.log(
+    `Updated ${createdStation.name} with ${createdStation.slots.length} slots.`,
+  );
+}
 
   // ---------------------------------------
   // Find slots for bookings
@@ -338,52 +386,57 @@ async function main(): Promise<void> {
   // Bookings
   // ---------------------------------------
 
-  await prisma.booking.createMany({
-    data: [
-      {
-        userId: robby.id,
-        slotId: tunjunganFastSlot.id,
-        bookingCode: "VOL-202607-001",
-        startTime: new Date(
-          "2026-07-20T03:00:00.000Z",
-        ),
-        endTime: new Date(
-          "2026-07-20T04:00:00.000Z",
-        ),
-        estimatedKwh: "30.00",
-        estimatedCost: "112500.00",
-        status: BookingStatus.CONFIRMED,
+  const seedBookings = [
+    {
+      userId: robby.id,
+      slotId: tunjunganFastSlot.id,
+      bookingCode: "VOL-202607-001",
+      startTime: new Date("2026-07-20T03:00:00.000Z"),
+      endTime: new Date("2026-07-20T04:00:00.000Z"),
+      estimatedKwh: "30.00",
+      estimatedCost: "112500.00",
+      status: BookingStatus.CONFIRMED,
+    },
+    {
+      userId: maya.id,
+      slotId: pakuwonUltraSlot.id,
+      bookingCode: "VOL-202607-002",
+      startTime: new Date("2026-07-21T06:00:00.000Z"),
+      endTime: new Date("2026-07-21T06:45:00.000Z"),
+      estimatedKwh: "40.00",
+      estimatedCost: "220000.00",
+      status: BookingStatus.PENDING,
+    },
+    {
+      userId: robby.id,
+      slotId: galaxyFastSlot.id,
+      bookingCode: "VOL-202607-003",
+      startTime: new Date("2026-07-10T02:00:00.000Z"),
+      endTime: new Date("2026-07-10T03:00:00.000Z"),
+      estimatedKwh: "25.00",
+      estimatedCost: "93750.00",
+      status: BookingStatus.COMPLETED,
+    },
+  ];
+
+  for (const booking of seedBookings) {
+    await prisma.booking.upsert({
+      where: {
+        bookingCode: booking.bookingCode,
       },
-      {
-        userId: maya.id,
-        slotId: pakuwonUltraSlot.id,
-        bookingCode: "VOL-202607-002",
-        startTime: new Date(
-          "2026-07-21T06:00:00.000Z",
-        ),
-        endTime: new Date(
-          "2026-07-21T06:45:00.000Z",
-        ),
-        estimatedKwh: "40.00",
-        estimatedCost: "220000.00",
-        status: BookingStatus.PENDING,
+
+      update: {
+        userId: booking.userId,
+        slotId: booking.slotId,
+        startTime: booking.startTime,
+        endTime: booking.endTime,
+        estimatedKwh: booking.estimatedKwh,
+        estimatedCost: booking.estimatedCost,
       },
-      {
-        userId: robby.id,
-        slotId: galaxyFastSlot.id,
-        bookingCode: "VOL-202607-003",
-        startTime: new Date(
-          "2026-07-10T02:00:00.000Z",
-        ),
-        endTime: new Date(
-          "2026-07-10T03:00:00.000Z",
-        ),
-        estimatedKwh: "25.00",
-        estimatedCost: "93750.00",
-        status: BookingStatus.COMPLETED,
-      },
-    ],
-  });
+
+      create: booking,
+    });
+  }
 
   // ---------------------------------------
   // Payments
@@ -412,31 +465,44 @@ async function main(): Promise<void> {
     );
   }
 
-   await prisma.payment.createMany({
-    data: [
-      {
-        bookingId: robbyBooking1.id,
-        amount: "112500.00",
-        paymentMethod: PaymentMethod.E_WALLET,
-        status: PaymentStatus.PAID,
-        transactionId: "VOL-PAY-001",
+  const seedPayments = [
+    {
+      bookingId: robbyBooking1.id,
+      amount: "112500.00",
+      paymentMethod: PaymentMethod.E_WALLET,
+      status: PaymentStatus.PAID,
+      transactionId: "VOL-PAY-001",
+    },
+    {
+      bookingId: mayaBooking.id,
+      amount: "220000.00",
+      paymentMethod: PaymentMethod.CARD,
+      status: PaymentStatus.PENDING,
+      transactionId: "VOL-PAY-002",
+    },
+    {
+      bookingId: robbyBooking2.id,
+      amount: "93750.00",
+      paymentMethod: PaymentMethod.E_WALLET,
+      status: PaymentStatus.PAID,
+      transactionId: "VOL-PAY-003",
+    },
+  ];
+
+  for (const payment of seedPayments) {
+    await prisma.payment.upsert({
+      where: {
+        bookingId: payment.bookingId,
       },
-      {
-        bookingId: mayaBooking.id,
-        amount: "220000.00",
-        paymentMethod: PaymentMethod.CARD,
-        status: PaymentStatus.PENDING,
-        transactionId: "VOL-PAY-002",
+
+      update: {
+        amount: payment.amount,
+        paymentMethod: payment.paymentMethod,
       },
-      {
-        bookingId: robbyBooking2.id,
-        amount: "93750.00",
-        paymentMethod: PaymentMethod.E_WALLET,
-        status: PaymentStatus.PAID,
-        transactionId: "VOL-PAY-003",
-      },
-    ],
-  });
+
+      create: payment,
+    });
+  }
 
   const totalSlots = createdStations.reduce(
     (total, station) =>

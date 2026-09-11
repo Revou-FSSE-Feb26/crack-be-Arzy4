@@ -14,7 +14,7 @@ export type MockStation = {
   longitude: number;
   latitude: number;
   chargingTypes: MockChargingType[];
-  status: "Available" | "Limited" | "Almost Full" | "Full";
+  status: "Available" | "Maintenance" | "Inactive";
 };
 
 export const ChargingStationsData: MockStation[] = [
@@ -61,7 +61,7 @@ export const ChargingStationsData: MockStation[] = [
       { type: "Fast", power: 60, total: 3, available: 1 },
       { type: "Ultra", power: 150, total: 1, available: 0 },
     ],
-    status: "Limited",
+    status: "Available",
   },
   {
     id: 4,
@@ -76,7 +76,7 @@ export const ChargingStationsData: MockStation[] = [
       { type: "Fast", power: 60, total: 3, available: 0 },
       { type: "Ultra", power: 150, total: 2, available: 0 },
     ],
-    status: "Full",
+    status: "Available",
   },
   {
     id: 5,
@@ -106,7 +106,7 @@ export const ChargingStationsData: MockStation[] = [
       { type: "Fast", power: 60, total: 4, available: 0 },
       { type: "Ultra", power: 150, total: 2, available: 0 },
     ],
-    status: "Full",
+    status: "Available",
   },
   {
     id: 7,
@@ -136,7 +136,7 @@ export const ChargingStationsData: MockStation[] = [
       { type: "Fast", power: 60, total: 4, available: 1 },
       { type: "Ultra", power: 150, total: 2, available: 0 },
     ],
-    status: "Limited",
+    status: "Available",
   },
   {
     id: 9,
@@ -151,7 +151,7 @@ export const ChargingStationsData: MockStation[] = [
       { type: "Fast", power: 60, total: 2, available: 1 },
       { type: "Ultra", power: 150, total: 1, available: 0 },
     ],
-    status: "Almost Full",
+    status: "Available",
   },
   {
     id: 10,
@@ -166,7 +166,7 @@ export const ChargingStationsData: MockStation[] = [
       { type: "Fast", power: 60, total: 4, available: 1 },
       { type: "Ultra", power: 150, total: 2, available: 0 },
     ],
-    status: "Limited",
+    status: "Available",
   },
   {
     id: 11,
@@ -211,7 +211,7 @@ export const ChargingStationsData: MockStation[] = [
       { type: "Fast", power: 60, total: 3, available: 0 },
       { type: "Ultra", power: 150, total: 1, available: 0 },
     ],
-    status: "Almost Full",
+    status: "Available",
   },
   {
     id: 14,
@@ -241,7 +241,7 @@ export const ChargingStationsData: MockStation[] = [
       { type: "Fast", power: 60, total: 4, available: 1 },
       { type: "Ultra", power: 150, total: 2, available: 1 },
     ],
-    status: "Limited",
+    status: "Available",
   },
   {
     id: 16,
@@ -271,7 +271,7 @@ export const ChargingStationsData: MockStation[] = [
       { type: "Fast", power: 60, total: 3, available: 1 },
       { type: "Ultra", power: 150, total: 1, available: 0 },
     ],
-    status: "Almost Full",
+    status: "Available",
   },
   {
     id: 18,
@@ -286,7 +286,7 @@ export const ChargingStationsData: MockStation[] = [
       { type: "Fast", power: 60, total: 4, available: 0 },
       { type: "Ultra", power: 150, total: 2, available: 0 },
     ],
-    status: "Full",
+    status: "Available",
   },
   {
     id: 19,
