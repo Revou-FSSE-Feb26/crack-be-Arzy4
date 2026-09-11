@@ -51,7 +51,15 @@ export class PaymentsService {
                 id,
             },
             include: {
-                booking: true,
+                booking: {
+                include: {
+                    slot: {
+                    include: {
+                        station: true,
+                    },
+                    },
+                },
+                },
             },
         });
 
