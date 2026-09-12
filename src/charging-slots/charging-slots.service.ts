@@ -16,7 +16,7 @@ export class ChargingSlotsService {
     async findAll(): Promise<ChargingSlotsResponse> {
         const chargingSlots = await this.prisma.chargingSlot.findMany({
             orderBy: {
-            id: "asc",
+                slotCode: "asc",
             },
         });;
 
