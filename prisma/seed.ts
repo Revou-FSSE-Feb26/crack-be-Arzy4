@@ -271,14 +271,9 @@ async function main(): Promise<void> {
       longitude:
         mockStation.latitude.toString(),
 
-      description:
-        `${mockStation.name} provides Normal, Fast, and Ultra EV charging services.`,
-
       status: mapStationStatus(
         mockStation.status,
       ),
-
-      imageUrl: null,
     },
 
     create: {
@@ -294,14 +289,9 @@ async function main(): Promise<void> {
       longitude:
         mockStation.latitude.toString(),
 
-      description:
-        `${mockStation.name} provides Normal, Fast, and Ultra EV charging services.`,
-
       status: mapStationStatus(
         mockStation.status,
       ),
-
-      imageUrl: null,
     },
 
     include: {

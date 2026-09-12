@@ -33,14 +33,6 @@ export class CreateStationDto {
   longitude!: string;
 
   @IsOptional()
-  @IsString()
-  description?: string;
-
-  @IsOptional()
   @IsEnum(StationStatus)
   status?: StationStatus;
-
-  @IsOptional()
-  @IsUrl()
-  imageUrl?: string;
 }

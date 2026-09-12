@@ -74,9 +74,7 @@ model ChargingStation {
   address     String
   latitude    Decimal        @db.Decimal(10, 7)
   longitude   Decimal        @db.Decimal(10, 7)
-  description String?
   status      StationStatus  @default(AVAILABLE)
-  imageUrl    String?        @map("image_url")
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
   slots       ChargingSlot[]
