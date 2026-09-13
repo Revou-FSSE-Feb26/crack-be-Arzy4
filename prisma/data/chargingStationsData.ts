@@ -25,8 +25,8 @@ export const ChargingStationsData: MockStation[] = [
     location: "Tunjungan Plaza 6",
     area: "Kedungdoro, Tegalsari",
     address: "Jl. Basuki Rahmat No.8-12, Kedungdoro, Tegalsari, Surabaya",
-    latitude: -7.257472,
-    longitude: 112.752088,
+    latitude: -7.261864,
+    longitude: 112.738503,
     chargingTypes: [
       { type: "Normal", power: 22, total: 6, available: 3, pricePerKwh: 2500 },
       { type: "Fast", power: 60, total: 4, available: 2, pricePerKwh: 3750 },
@@ -153,8 +153,8 @@ export const ChargingStationsData: MockStation[] = [
     location: "Spazio Tower",
     area: "Pradahkalikendal",
     address: "Jl. Mayjen Yono Suwoyo, Pradahkalikendal, Surabaya",
-    latitude: -7.2867,
-    longitude: 112.6768,
+    latitude: -7.2897,
+    longitude: 112.6774,
     chargingTypes: [
       { type: "Normal", power: 22, total: 4, available: 1, pricePerKwh: 2500 },
       { type: "Fast", power: 60, total: 2, available: 1, pricePerKwh: 3750 },
@@ -177,14 +177,14 @@ export const ChargingStationsData: MockStation[] = [
     ],
     status: "Available",
   },
-    {
+  {
     id: 11,
     name: "Voltra Station Pakuwon City Mall",
     location: "Pakuwon City Mall",
     area: "Mulyorejo",
     address: "Jl. Raya Laguna KJW Putih Tambak, Mulyorejo, Surabaya",
-    latitude: -7.277069,
-    longitude: 112.806100,
+    latitude: -7.27572,
+    longitude: 112.80502,
     chargingTypes: [
       { type: "Normal", power: 22, total: 6, available: 4, pricePerKwh: 2500 },
       { type: "Fast", power: 60, total: 4, available: 2, pricePerKwh: 3750 },
@@ -199,8 +199,8 @@ export const ChargingStationsData: MockStation[] = [
     location: "Institut Teknologi Sepuluh Nopember",
     area: "Keputih, Sukolilo",
     address: "Jl. Teknik Kimia, Keputih, Sukolilo, Surabaya",
-    latitude: -7.276800,
-    longitude: 112.791600,
+    latitude: -7.28255,
+    longitude: 112.79534,
     chargingTypes: [
       { type: "Normal", power: 22, total: 5, available: 3, pricePerKwh: 2500 },
       { type: "Fast", power: 60, total: 3, available: 2, pricePerKwh: 3750 },
@@ -311,8 +311,8 @@ export const ChargingStationsData: MockStation[] = [
     location: "Jembatan Merah Plaza",
     area: "Krembangan Selatan",
     address: "Jl. Rajawali No.82-84, Krembangan Selatan, Surabaya",
-    latitude: -7.234000,
-    longitude: 112.736200,
+    latitude: -7.23434,
+    longitude: 112.73791,
     chargingTypes: [
       { type: "Normal", power: 22, total: 5, available: 3, pricePerKwh: 2500 },
       { type: "Fast", power: 60, total: 2, available: 1, pricePerKwh: 3750 },
