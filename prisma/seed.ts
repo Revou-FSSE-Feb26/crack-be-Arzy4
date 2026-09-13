@@ -266,10 +266,10 @@ async function main(): Promise<void> {
       address: mockStation.address,
 
       latitude:
-        mockStation.longitude.toString(),
+        mockStation.latitude.toString(),
 
       longitude:
-        mockStation.latitude.toString(),
+        mockStation.longitude.toString(),
 
       status: mapStationStatus(
         mockStation.status,
@@ -284,10 +284,10 @@ async function main(): Promise<void> {
       address: mockStation.address,
 
       latitude:
-        mockStation.longitude.toString(),
+        mockStation.latitude.toString(),
 
       longitude:
-        mockStation.latitude.toString(),
+        mockStation.longitude.toString(),
 
       status: mapStationStatus(
         mockStation.status,
